@@ -7,11 +7,24 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from .models import UploadedImage
 from .forms import ImageUploadForm
 
-# Load model
+# ✅ Load trained model
 model = tf.keras.models.load_model("waste_model.h5")
 
-CLASS_NAMES = ["plastic", "metal", "glass", "paper", "cardboard", "trash"]
+# ✅ Correct 10 classes (alphabetical)
+CLASS_NAMES = [
+    "battery",
+    "biological",
+    "cardboard",
+    "clothes",
+    "glass",
+    "metal",
+    "paper",
+    "plastic",
+    "shoes",
+    "trash"
+]
 
+# ✅ Preprocessing
 def preprocess(image_path):
     img = load_img(image_path, target_size=(224, 224))
     img = img_to_array(img)
@@ -27,22 +40,22 @@ def classify_image(request):
     form = ImageUploadForm(request.POST, request.FILES)
 
     if not form.is_valid():
-        return JsonResponse({"error": "invalid form"}, status=400)
+        return JsonResponse({"error": "Invalid form data"}, status=400)
 
     uploaded = form.save()
     image_path = uploaded.image.path
 
-    # Preprocess
+    # ✅ Preprocess image
     img = preprocess(image_path)
 
-    # Predict
+    # ✅ Predict
     preds = model.predict(img)[0]
     idx = np.argmax(preds)
 
     label = CLASS_NAMES[idx]
     confidence = float(preds[idx])
 
-    # Save to DB
+    # ✅ Save to database
     uploaded.predicted_label = label
     uploaded.confidence = confidence
     uploaded.save()

@@ -1,12 +1,13 @@
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image_dataset_from_directory
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras import layers, Model
 
-DATASET_PATH = "dataset/"  # Your dataset folder
+# ✅ Correct dataset path
+DATASET_PATH = "dataset/garbage-dataset"
 
 print("✅ Loading dataset...")
 
+# ✅ Load dataset with correct path
 train_ds = image_dataset_from_directory(
     DATASET_PATH,
     image_size=(224, 224),
@@ -15,20 +16,23 @@ train_ds = image_dataset_from_directory(
 )
 
 print("✅ Dataset loaded!")
+print("✅ Classes found:", train_ds.class_names)
 
-# Load MobileNetV2 (pretrained on ImageNet)
+# ✅ Load pretrained MobileNetV2
 base = tf.keras.applications.MobileNetV2(
     input_shape=(224, 224, 3),
     include_top=False,
     weights="imagenet"
 )
 
-base.trainable = False  # Freeze base model
+base.trainable = False  # Freeze backbone
 
-# Add new layers
+# ✅ Add custom layers
 x = layers.GlobalAveragePooling2D()(base.output)
 x = layers.Dense(128, activation="relu")(x)
-out = layers.Dense(6, activation="softmax")(x)
+
+# ✅ 10 classes (important)
+out = layers.Dense(10, activation="softmax")(x)
 
 model = Model(inputs=base.input, outputs=out)
 
